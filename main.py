@@ -94,7 +94,7 @@ file = open("./Assets/Shader/vertex.vert", "r")
 vertex_shader = file.read()
 file.close()
 
-file = open("./Assets/Shader/frag2.frag", "r")
+file = open("./Assets/Shader/worley.frag", "r")
 frag_shader = file.read()
 file.close()
 
@@ -418,20 +418,20 @@ while run:
     surf = pygame.transform.scale(display, (screen_w, screen_h))
     window.blit(surf, (0, 0))
     frame_tex = surf_to_texture(window)
-    pnoise_tex = surf_to_texture(noise_img)
+    #pnoise_tex = surf_to_texture(noise_img)
     ui_tex = surf_to_texture(ui_display)
     frame_tex.use(location=0)
-    pnoise_tex.use(location=1)
+    #pnoise_tex.use(location=1)
     ui_tex.use(location=2)
     program['tex'] = 0
-    program['noise_tex1'] = 1
+    #program['noise_tex1'] = 1
     program['ui_tex'] = 2
-    program['time'] = int((t.time() - start_time) * 100)
+    program['time'] = int((t.time() - start_time) * 10)
     #program['choice'] = choice
     render_object.render(mode=moderngl.TRIANGLE_STRIP)
 
     pygame.display.flip()
 
     frame_tex.release()
-    pnoise_tex.release()
+    #pnoise_tex.release()
     ui_tex.release()
