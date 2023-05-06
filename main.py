@@ -94,7 +94,7 @@ file = open("./Assets/Shader/vertex.vert", "r")
 vertex_shader = file.read()
 file.close()
 
-file = open("./Assets/Shader/worley.frag", "r")
+file = open("./Assets/Shader/slime.frag", "r")
 frag_shader = file.read()
 file.close()
 
@@ -426,7 +426,7 @@ while run:
     program['tex'] = 0
     #program['noise_tex1'] = 1
     program['ui_tex'] = 2
-    program['time'] = int((t.time() - start_time) * 10)
+    program['time'] = t.time() - start_time
     #program['choice'] = choice
     render_object.render(mode=moderngl.TRIANGLE_STRIP)
 
