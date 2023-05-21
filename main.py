@@ -6,12 +6,11 @@
 
 import pygame 
 
-import moderngl
 
 import time as t
 import random
 import math
-from array import array
+
 import Assets.Scripts.framework as f
 import Assets.Scripts.background as backg
 import Assets.Scripts.bg_particles as bg_particles
@@ -20,6 +19,7 @@ import Assets.Scripts.pistol as pistol
 import Assets.Scripts.smg as smg
 import Assets.Scripts.rocket as rocket
 import Assets.Scripts.sparks as spark
+import Assets.Scripts.shader as shader
 pygame.init()
 from pygame.locals import *
 
@@ -67,12 +67,7 @@ def free_inventory_slot(inventory):
             return x
     return "full"
 
-def surf_to_texture(surf):
-    tex = ctx.texture(surf.get_size(), 4)
-    tex.filter = (moderngl.NEAREST, moderngl.NEAREST)
-    tex.swizzle = 'BGRA'
-    tex.write(surf.get_view('1'))
-    return tex
+
 
 #Display settings
 
@@ -90,25 +85,12 @@ def surf_to_texture(surf):
         f_color = darkness * dark + (1 - darkness) * f_color;
     }
 '''
-file = open("./Assets/Shader/vertex.vert", "r")
-vertex_shader = file.read()
-file.close()
 
-file = open("./Assets/Shader/slime.frag", "r")
-frag_shader = file.read()
-file.close()
 
 screen_w = 1000
 screen_h = 600
 screen = pygame.display.set_mode((screen_w, screen_h), pygame.OPENGL | pygame.DOUBLEBUF)
-ctx = moderngl.create_context()
-quad_buffer = ctx.buffer(data=array('f', [
-    #Position (x,y), uv coords (x,y)
-    -1.0, 1.0, 0.0, 0.0,
-    1.0, 1.0, 1.0, 0.0,
-    -1.0, -1.0, 0.0, 1.0,
-    1.0, -1.0, 1.0, 1.0,
-]))
+
 window = pygame.Surface((screen_w,screen_h))
 display = pygame.Surface((screen_w//2, screen_h//2))
 blank_display = pygame.Surface((screen_w//2, screen_h//2), pygame.SRCALPHA)
@@ -223,8 +205,8 @@ yeagle = pistol.Pistol((35, 45), pistol_img.get_width(), pistol_img.get_height()
 item_dict = {"p" : ["Pistol", pistol_logo_img, -2], "s" : ["SMG", smg_logo_img, -2], "r" : ["Rocket", rocket_logo_img, -2]}
 
 #Shader stuff
-program = ctx.program(vertex_shader=vertex_shader, fragment_shader=frag_shader)
-render_object = ctx.vertex_array(program, [(quad_buffer, '2f 2f', 'vert', 'texcoord')])
+shader_obj = shader.Shader(True, "./Assets/Shader/vertex.vert", "./Assets/Shader/main_frag.frag")
+
 noise_img = pygame.image.load("./Assets/Shader/pnoise.png").convert_alpha()
 choice = 0
 start_time = t.time()
@@ -417,21 +399,5 @@ while run:
     bg_particle_effect.recursive_call(time, display, scroll, dt)
     surf = pygame.transform.scale(display, (screen_w, screen_h))
     window.blit(surf, (0, 0))
-    frame_tex = surf_to_texture(window)
-    #pnoise_tex = surf_to_texture(noise_img)
-    ui_tex = surf_to_texture(ui_display)
-    frame_tex.use(location=0)
-    #pnoise_tex.use(location=1)
-    ui_tex.use(location=2)
-    program['tex'] = 0
-    #program['noise_tex1'] = 1
-    program['ui_tex'] = 2
-    program['time'] = t.time() - start_time
-    #program['choice'] = choice
-    render_object.render(mode=moderngl.TRIANGLE_STRIP)
-
+    shader_obj.draw({"tex" : window, "noise_tex1": noise_img, "ui_tex" : ui_display}, {"time" : t.time() - start_time, "itime": int((t.time() - start_time) * 100) })
     pygame.display.flip()
-
-    frame_tex.release()
-    #pnoise_tex.release()
-    ui_tex.release()
